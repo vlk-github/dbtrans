@@ -1,4 +1,4 @@
-from task import *
+from process import *
 
 config = {
     'task_id': 'news_task',
@@ -18,5 +18,5 @@ config = {
     }
 }
 
-task = Task(config)
-task.start()
+process = Process(config)
+process.start()

@@ -6,7 +6,7 @@ config = {
         'host': 'localhost',
         'user': 'root',
         'passwd': '111111',
-        'database': 'mysql'
+        'database': 'test'
     },
     'tables': {
         'primary_table_name': 'test_1',
@@ -19,4 +19,5 @@ config = {
 }
 
 process = Process(config)
+process.create_task_table()
 process.start()

@@ -1,22 +1,25 @@
-from googletrans import Translator
-
-#translator = Translator(['translate.google.cn'])
-#aa = translator.translate('안녕하세요.')
-
-#print(aa)
-
-
-def test(**connect_kwargs):
-    print(connect_kwargs['a'])
-    print(connect_kwargs)
+from process import *
 
 config = {
-    'aaa': {
-        'a': 1,
-        'b': 2,
-        'c':3
+    'database': {
+        'host': 'localhost',
+        'user': 'root',
+        'passwd': '111111',
+        'database': 'test'
+    },
+    'task': {
+        'name': 'news_task',
+        'table': 'test_1',
+        'fields': ['title', 'summary'],
+        'primary_key': 'id',
+        'attached': {
+            'table': 'test_2',
+            'fields': ['content'],
+            'relation_key': 'id',
+        }
     }
 }
 
-test(**config['aaa'])
+process = Process(config)
+process.start()
 

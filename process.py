@@ -1,29 +1,18 @@
-from task import *
+from model import *
 
 
 class Process(object):
     def __init__(self, config: dict):
         self.database = MySQLDatabase(**config['database'])
-        self.database.field_overrides['text'] = 'TEXT'
-        self.export_sql = self.build_export_sql(**config['tables'])
-
-
-    def create_task_table(self):
+        self.database.connect()
         database_proxy.initialize(self.database)
+        self.task_kwargs = config['task']
+        Task._meta.db_table = self.task_kwargs['name']
+        Task.create_table(fail_silently=True)
 
-        task = Task()
-        task.create_table()
-        print(task.table_exists())
-
-        #task.create_table()
-        #Task.Meta.database = self.database
-        #self.database.create_table(Task)
-
-        return
-
-    def build_export_sql(self, **table_kwargs):
-        sql = 'SELECT '
-        sql += table_kwargs['primary_table_name'] + '.' + table_kwargs['primary_table_key']
+    def build_export_sql(self):
+        sql = 'SELECT %(fields)s FROM %(tables)s'
+        sql += self.task_kwargs['primary_table_name'] + '.' + table_kwargs['primary_table_key']
         for field in table_kwargs['primary_table_fields']:
             sql += ', ' + table_kwargs['primary_table_name'] + '.' + field
         if 'attached_table_fields' in table_kwargs:

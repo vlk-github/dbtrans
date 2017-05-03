@@ -1,15 +1,22 @@
-from model import *
+import pymysql
+from task import *
 
 
 class Process(object):
-    def __init__(self, config: dict):
-        self.database = MySQLDatabase(**config['database'])
-        self.database.connect()
-        database_proxy.initialize(self.database)
-        self.task_kwargs = config['task']
-        Task._meta.db_table = self.task_kwargs['name']
-        Task.create_table(fail_silently=True)
+    def __init__(self, config:dict):
+        self.database = pymysql.connect(**config['database'])
+        self.task = config['task']
 
+    def create_task_table(self):
+        try:
+            with self.database.cursor() as cursor:
+                cursor.execute(self.task.get_create_table_sql())
+                self.database.commit()
+        finally:
+            self.database.close()
+        pass
+
+    """
     def build_export_sql(self):
         sql = 'SELECT %(fields)s FROM %(tables)s'
         sql += self.task_kwargs['primary_table_name'] + '.' + table_kwargs['primary_table_key']
@@ -24,7 +31,7 @@ class Process(object):
             sql += table_kwargs['primary_table_name'] + '.' + table_kwargs['primary_table_key'] + ' = '
             sql += table_kwargs['attached_table_name'] + '.' + table_kwargs['attached_table_key']
         return sql
-
+"""
     def start(self):
         return
 

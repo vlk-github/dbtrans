@@ -21,5 +21,6 @@ config = {
 }
 
 process = Process(config)
+process.create_task_table()
 process.start()
 

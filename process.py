@@ -18,6 +18,7 @@ class Process(object):
 
     """
     def build_export_sql(self):
+
         sql = 'SELECT %(fields)s FROM %(tables)s'
         sql += self.task_kwargs['primary_table_name'] + '.' + table_kwargs['primary_table_key']
         for field in table_kwargs['primary_table_fields']:

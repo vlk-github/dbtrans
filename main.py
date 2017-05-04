@@ -2,7 +2,7 @@
 import os
 import warnings
 import pymysql.cursors
-from googletrans import Translator
+from translator import *
 
 connect_params = {
     'host': 'localhost',
@@ -97,25 +97,13 @@ class Task(object):
         if result:
             data = list(result[0].values())
             self.last_id = data.pop(0)
-            translator = Translator()
-            aa = """
-<div class="text" id="text" style="font-size: 14px;">
-                        <p style="font-size: 14px;">　　中新社华盛顿5月1日电 <a href="http://country.huanqiu.com/america" class="linkAbout" target="_blank" title="美国">美国</a>总统特朗普5月1日接受美国媒体采访时表示，如果情况允许，他愿意与<a href="http://country.huanqiu.com/north_korea" class="linkAbout" target="_blank" title="朝鲜">朝鲜</a>最高领导人金正恩举行会面。</p>
-<p style="font-size: 14px;">　　特朗普当天在白宫椭圆办公室接受彭博社专访时做出上述表态。特朗普说，“如果与他(金正恩)会面是一件可行之事，我肯定会这么做，并且会感到荣幸，但前提是情况要允许。”他说，“大多数政治人物不会明确表态愿意与金正恩会面，但我愿意。”</p>
-<p style="font-size: 14px;">　　特朗普在采访中没有指明“情况允许”的具体含义。这一表态也成为当天白宫例行记者会上的热门话题。</p><div class="ad250x250 fLeft marRig10" id="adPp"><!-- Ad Survey 广告位代码  文章内页画中画08--><script type="text/javascript">AD_SURVEY_Add_AdPos("9263");</script></div>
-<p style="font-size: 14px;">　　白宫发言人斯派塞1日表示，“情况允许”意味着很多事情，这首先需要朝鲜立即停止挑衅性行为。斯派塞说，朝鲜半岛局势持续紧张，朝鲜对美国以及地区盟友构成严重的潜在安全威胁。特朗普总统将始终把保护美国的国家安全作为首要目1234asas
-
-                    </div>
-            """
-
-            #translations = translator.translate(aa)
-            print(len(aa))
-           # for translation in translations:
-              #  print(translation)
-            #data.append(self.last_id)
+            trans = Translalor()
+            translations = trans.translate(data, src=self.source, dest=self.target)
+            for translation in translations:
+                print(translation)
+            data.append(self.last_id)
             #aa = sql_execute(self.update_tpl, data)
             #print(data)
-        pass
 
 
 task = Task(**task_params)

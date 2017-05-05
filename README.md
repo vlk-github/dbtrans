@@ -6,6 +6,10 @@ depend
 
 .. code:: bash
 
+    $ pip install googletrans
+
+Basic Usage
+
   $ pip install pymysql
   $ pip install requests
   $ pip install googletrans

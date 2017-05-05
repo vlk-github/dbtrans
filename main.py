@@ -2,7 +2,9 @@
 import os
 import warnings
 import pymysql.cursors
-from translator import *
+from googletrans import Translator as BaseTranslator
+from googletrans import urls, utils
+from googletrans.constants import DEFAULT_USER_AGENT, LANGUAGES, SPECIAL_CASES
 
 connect_params = {
     'host': 'localhost',
@@ -37,6 +39,68 @@ def sql_execute(query, args=None):
         if query.startswith('SELECT'):
             result = cursor.fetchall()
     return result
+
+
+class Translator(BaseTranslator):
+    def __init__(self, service_urls=None, user_agent=DEFAULT_USER_AGENT):
+        BaseTranslator.__init__(self, service_urls, user_agent)
+
+    def translate(self, text, dest='en', src='auto'):
+        if src != 'auto':
+            if src not in LANGUAGES.keys() and src in SPECIAL_CASES.keys():
+                src = SPECIAL_CASES[src]
+            elif src not in LANGUAGES.keys():
+                raise ValueError('invalid source language')
+
+        if dest not in LANGUAGES.keys():
+            if dest in SPECIAL_CASES.keys():
+                dest = SPECIAL_CASES[dest]
+            else:
+                raise ValueError('invalid destination language')
+
+        if isinstance(text, list):
+            result = []
+            for item in text:
+                translated = self.translate(item, dest=dest, src=src)
+                result.append(translated)
+            return result
+
+        if len(text) > 5000:
+            result = ''
+            origin = text
+            while len(origin) > 0:
+                result += self._translate(origin[:5000], dest, src)
+                origin = origin[5000:]
+            return result
+
+        data = self._translate(text, dest, src)
+        return data
+
+    def _translate(self, text, dest='en', src='auto'):
+        token = self.token_acquirer.do(text)
+        params = utils.build_params(query=text, src=src, dest=dest,
+                                    token=token)
+        url = urls.TRANSLATE.format(host=self._pick_service_url())
+
+        if len(text) < 200:
+            response = self.session.get(url, params=params)
+        else:
+            data = {'q': params.pop('q')}
+            query = '?'
+            for key in params:
+                value = params[key]
+                if type(value) == list:
+                    for item in value:
+                        query += key + '=' + item + '&'
+                elif type(value) != str:
+                    query += key + '=' + str(value) + '&'
+                else:
+                    query += key + '=' + value + '&'
+            response = self.session.post(url + query, data=data)
+
+        result = utils.format_json(response.text)
+        data = ''.join([d[0] if d[0] else '' for d in result[0]])
+        return data
 
 
 class Task(object):
@@ -89,22 +153,27 @@ class Task(object):
 
     def save_last_id(self):
         with open(self.name, 'w') as file:
-            file.write(self.last_id)
+            file.write(str(self.last_id))
         pass
 
     def execute(self):
-        result = sql_execute(self.select_tpl, [self.last_id])
+        result = list(sql_execute(self.select_tpl, [self.last_id]))
         if result:
-            data = list(result[0].values())
+            data = list(dict(result[0]).values())
+            print('id:' + str(data[0]) + ' title:' + data[1])
             self.last_id = data.pop(0)
-            trans = Translalor()
-            translations = trans.translate(data, src=self.source, dest=self.target)
-            for translation in translations:
-                print(translation)
+            translator = Translator()
+            data = translator.translate(data, src=self.source, dest=self.target)
             data.append(self.last_id)
-            #aa = sql_execute(self.update_tpl, data)
-            #print(data)
-
+            flag = sql_execute(self.update_tpl, data)
+            if flag > 0:
+                self.save_last_id()
+                self.execute()
+            else:
+                print('update error!')
+        else:
+            print('not found data!')
+        pass
 
 task = Task(**task_params)
 task.execute()

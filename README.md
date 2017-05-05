@@ -4,10 +4,10 @@ Use the Google translate API to translate tables in the mysql
 depend
 --------
 
-.. code:: bash
-
-    $ pip install googletrans
-
+    $ pip install pymysql
+    $ pip install pymysql
+    $ pip install requests
+    
 Basic Usage
 
   $ pip install pymysql
